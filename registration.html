@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <header class="container">
+        <div class="left__logo"><a href="index.html">SaveFile</a></div>
+        <div class="right__menu">
+            <ul>
+                <li><a href="my_files.html">My Files</a></li>
+                <li><a href="upload.html">Upload</a></li>
+                <li><a href="registration.html">Account</a></li>
+            </ul>
+        </div>
+    </header>
+    <div class="registration__block container">
+        <form class="form" action="php/registration.php" method="post">
+            <div class="username_field">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username"><br>
+        </div>
+        <div class="email_field">
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email"><br>
+        </div>
+        <div class="password_field">
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password"><br>
+        </div>
+        <div class="password_again_field">
+            <label for="password-again">Password again:</label><br>
+            <input type="password" id="passwordAgain" name="password-again"><br>
+        </div>
+            <input type="submit" value="Sign Up" class="submit_btn">
+        </form>
+        <div id="form-response"></div> 
+        <p>or</p>
+
+        <a href="login.html" class="login_btn">Sign In</a>
+    </div>
+</body>
+</html>

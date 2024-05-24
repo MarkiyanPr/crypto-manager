@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="container">
+        <div class="left__logo"><a href="index.html">SaveFile</a></div>
+        <div class="right__menu">
+            <ul>
+                <li><a href="my_files.html">My Files</a></li>
+                <li><a href="upload.html">Upload</a></li>
+                <li><a href="registration.html">Account</a></li>
+            </ul>
+        </div>
+    </header>
+    <div class="login__block container">
+        <form id="reset-password-form" class="form">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+
+            <label for="username">New password:</label><br>
+            <input type="text" id="newPassword" name="newPassword" required><br>
+
+            <input type="submit" value="Reset Password">
+        </form>
+    </div>
+    <script>
+        document.getElementById('reset-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            const username = document.getElementById('username').value;
+            const newPassword = document.getElementById('newPassword').value;
+    
+            // Step 1: Initialize password reset
+            fetch('php/password_reset.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.resetToken) {
+                    console.log('Reset token:', data.resetToken);
+    
+                    // Step 2: Complete password reset
+                    fetch('php/reset_finish.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ resetToken, newPassword })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.msg);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                } else {
+                    console.error(data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+        </script>
+</body>
+</html>

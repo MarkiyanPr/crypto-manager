@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="container">
+        <div class="left__logo"><a href="index.html">SaveFile</a></div>
+        <div class="right__menu">
+            <ul>
+                <li><a href="my_files.html">My Files</a></li>
+                <li><a href="upload.html">Upload</a></li>
+                <li><a href="registration.html">Account</a></li>
+            </ul>
+        </div>
+    </header>
+    <div class="upload__block container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+        <div>
+            <input type="file" id="file_input" accept="image/*">            <p>Drag & Drop files here</p>
+            <img class="upload_blue" src="img/upload.png" alt="">
+            <img class="upload_white" src="img/upload-white.png" alt="">
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

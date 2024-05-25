@@ -20,7 +20,6 @@ app.post('/register', async (req, res) => {
 
     try {
         await fs.ensureDir(userDir);
-        // Збереження даних користувача у файл (для прикладу)
         const userData = { email, password };
         await fs.writeJson(path.join(userDir, 'user.json'), userData);
 

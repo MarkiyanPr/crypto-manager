@@ -21,7 +21,7 @@
         </div>
     </header>    
     <div class="login__block container">
-        <form action="/login" method="post" class="form">
+        <form id="login-form" class="form">
             <label for="username">Username:</label><br>
             <input type="text" id="username" name="username" required><br>
             
@@ -30,6 +30,8 @@
             
             <input type="submit" value="Login">
         </form>
+        <div id="form-response"></div>
     </div>
+    <script src="registration.js"></script>
 </body>
 </html>

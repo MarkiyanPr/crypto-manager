@@ -4,6 +4,8 @@ import sqlite3 from 'sqlite3';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,67 +46,90 @@ app.get('/', (req, res) => {
     res.sendFile(indexPath);
 });
 
+// Функція для хешування паролю
+async function hashPassword(password) {
+    const saltRounds = 10;
+    return bcrypt.hash(password, saltRounds);
+}
+
+// Функція для перевірки хешу пароля
+async function comparePasswords(plainPassword, hashedPassword) {
+    return bcrypt.compare(plainPassword, hashedPassword);
+}
+
+// Функція для збереження користувача в базу даних
+async function saveUserToDatabase(username, email, password) {
+    const db = new sqlite3.Database('database.db');
+    const query = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
+    return new Promise((resolve, reject) => {
+        db.run(query, [username, email, password], (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
 // Обробник для POST-запиту на реєстрацію
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
-    function saveUserToDatabase(username, email, password) {
-        return new Promise((resolve, reject) => {
-            const db = new sqlite3.Database('database.db');
-            const query = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
-            db.run(query, [username, email, password], (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve();
-                }
-            });
-        });
+    try {
+        const hashedPassword = await hashPassword(password);
+        await saveUserToDatabase(username, email, hashedPassword);
+        createUserFolder(username); // Створюємо папку для користувача
+        res.json({ message: 'Реєстрація успішна!' });
+    } catch (error) {
+        console.error('Помилка збереження користувача:', error);
+        res.status(500).json({ message: 'Помилка реєстрації. Будь ласка, спробуйте пізніше.' });
     }
-
-    saveUserToDatabase(username, email, password)
-        .then(() => {
-            createUserFolder(username); // Створюємо папку для користувача
-            res.json({ message: 'Реєстрація успішна!' });
-        })
-        .catch(error => {
-            console.error('Помилка збереження користувача:', error);
-            res.status(500).json({ message: 'Помилка реєстрації. Будь ласка, спробуйте пізніше.' });
-        });
 });
 
+
+
 // Обробник для POST-запиту на вхід
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
-    function checkUserInDatabase(username, password) {
-        return new Promise((resolve, reject) => {
-            const db = new sqlite3.Database('database.db');
-            const query = `SELECT * FROM users WHERE username = ? AND password = ?`;
-            db.get(query, [username, password], (error, row) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(row);
-                }
-            });
-        });
-    }
-
-    checkUserInDatabase(username, password)
-        .then(user => {
-            if (user) {
+    try {
+        const user = await checkUserInDatabase(username);
+        if (user) {
+            console.log(user);
+            const passwordMatch = await comparePasswords(password, user.password);
+            if (passwordMatch) {
                 const accessToken = jwt.sign({ username: user.username }, secretKey);
                 res.json({ accessToken });
             } else {
                 res.status(401).json({ message: 'Неправильний логін або пароль' });
             }
-        })
-        .catch(error => {
-            console.error('Помилка перевірки користувача:', error);
-            res.status(500).json({ message: 'Помилка перевірки користувача. Будь ласка, спробуйте пізніше.' });
-        });
+        } else {
+            res.status(401).json({ message: 'Неправильний логін або пароль' });
+        }
+    } catch (error) {
+        console.error('Помилка перевірки користувача:', error);
+        res.status(500).json({ message: 'Помилка перевірки користувача. Будь ласка, спробуйте пізніше.' });
+    }
 });
+
+// Функція для перевірки користувача в базі даних
+async function checkUserInDatabase(username) {
+    const db = new sqlite3.Database('database.db');
+    const query = `SELECT * FROM users WHERE username = ?`;
+    console.log(query);
+    return new Promise((resolve, reject) => {
+        db.get(query, [username], (error, row) => {
+            if (error) {
+                reject(error);
+                
+            } else {
+                resolve(row);
+                
+            }
+        });
+    });
+}
 
 // Захищений маршрут
 app.get('/my_files', authenticateToken, (req, res) => {

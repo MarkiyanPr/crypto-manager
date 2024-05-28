@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
@@ -13,31 +13,47 @@
 
 <body>
     <header class="container">
-        <div class="left__logo"><a href="index.html">SaveFile</a></div>
+        <div class="left__logo"><a href="/index.html">SaveFile</a></div>
         <div class="right__menu">
             <ul>
-                <li><a href="my_files.html">My Files</a></li>
-                <li><a href="upload.html">Upload</a></li>
-                <li><a href="registration.html">Account</a></li>
+                <li><a href="/my_files.html">My Files</a></li>
+                <li><a href="/upload.html">Upload</a></li>
+                <li><a href="/profile.html">Profile</a></li> <!-- Changed the link to profile.html -->
             </ul>
         </div>
     </header>
     <div class="profile__block container">
         <div class="user__info">
-        <img src="img/user-photo.avif" alt="" class="user__photo">
-        <div class="user__details">
-        <div class="user__fullname">
-            <p class="user__name">Alex</p>
-            <p class="user__surname">Hack</p>
+            <img id="userPhoto" src="" alt="" class="user__photo"> <!-- Added id to user photo -->
+            <div class="user__details">
+                <div class="user__fullname">
+                    <p id="userName" class="user__name"></p> <!-- Added id to user name -->
+                    <p class="user__surname">Hack</p> <!-- Assuming surname is constant -->
+                </div>
+                <p id="userEmail" class="user__email"></p> <!-- Added id to user email -->
+            </div>
         </div>
-        <p class="user__email">markijan303@gmail.com</p>
+        <div class="profile__buttons">
+            <a href="#" class="button">Reset password</a>
+            <a href="#" class="button">Change email</a>
+        </div>
     </div>
-</div>
-<div class="profile__buttons">
-    <a href="#" class="button">Reset password</a>
-    <a href="#" class="button">Change email</a>
-</div>
-    </div>
+
+    <script>
+        window.onload = function () {
+            // Assuming you have user data available in a JavaScript object named 'userData'
+            const userData = {
+                name: 'Alex', // Replace with actual name
+                email: 'markijan303@gmail.com', // Replace with actual email
+                photo: 'img/user-photo.avif' // Replace with actual photo URL
+            };
+
+            // Update user info on the profile page
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userEmail').textContent = userData.email;
+            document.getElementById('userPhoto').src = userData.photo;
+        };
+    </script>
 </body>
 
 </html>

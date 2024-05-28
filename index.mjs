@@ -1,24 +1,24 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import sqlite3 from 'sqlite3';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const app = express();
 const PORT = 3000;
 const secretKey = 'your_secret_key';
+
+const app = express();
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Функція для створення папки користувача
+// Function to create user folder
 function createUserFolder(username) {
     const userFolderPath = path.join(__dirname, 'users folders', username);
-
     if (!fs.existsSync(userFolderPath)) {
         fs.mkdirSync(userFolderPath, { recursive: true });
         console.log(`Folder created for user: ${username}`);
@@ -27,7 +27,7 @@ function createUserFolder(username) {
     }
 }
 
-// Middleware для аутентифікації токену
+// Middleware for token authentication
 function authenticateToken(req, res, next) {
     const token = req.headers['authorization'];
     if (!token) return res.sendStatus(401);
@@ -39,20 +39,18 @@ function authenticateToken(req, res, next) {
     });
 }
 
-app.get('/', (req, res) => {
-    const indexPath = path.join(__dirname, 'index.html');
-    res.sendFile(indexPath);
-});
-
-// Обробник для POST-запиту на реєстрацію
-app.post('/register', (req, res) => {
+// Handler for registration
+app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(`Registering user: ${username}, email: ${email}, hashedPassword: ${hashedPassword}`);
 
-    function saveUserToDatabase(username, email, password) {
+    function saveUserToDatabase(username, email, hashedPassword) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database('database.db');
             const query = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
-            db.run(query, [username, email, password], (error) => {
+            db.run(query, [username, email, hashedPassword], (error) => {
+                db.close();
                 if (error) {
                     reject(error);
                 } else {
@@ -62,57 +60,74 @@ app.post('/register', (req, res) => {
         });
     }
 
-    saveUserToDatabase(username, email, password)
+    saveUserToDatabase(username, email, hashedPassword)
         .then(() => {
-            createUserFolder(username); // Створюємо папку для користувача
-            res.json({ message: 'Реєстрація успішна!' });
+            createUserFolder(username);
+            res.json({ message: 'Registration successful!' });
         })
         .catch(error => {
-            console.error('Помилка збереження користувача:', error);
-            res.status(500).json({ message: 'Помилка реєстрації. Будь ласка, спробуйте пізніше.' });
+            console.error('Error saving user:', error);
+            res.status(500).json({ message: 'Registration error. Please try again later.' });
         });
 });
 
-// Обробник для POST-запиту на вхід
+// Handler for login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
+    console.log(`Attempting login for user: ${username}, password: ${password}`);
+    console.log('Request body:', req.body);
 
-    function checkUserInDatabase(username, password) {
+    function checkUserInDatabase(username) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database('database.db');
-            const query = `SELECT * FROM users WHERE username = ? AND password = ?`;
-            db.get(query, [username, password], (error, row) => {
+            const query = `SELECT * FROM users WHERE username = ?`;
+            db.get(query, [username], (error, row) => {
+                db.close();
                 if (error) {
                     reject(error);
                 } else {
+                    console.log('User found:', row);
                     resolve(row);
                 }
             });
         });
     }
 
-    checkUserInDatabase(username, password)
+    checkUserInDatabase(username)
         .then(user => {
             if (user) {
-                const accessToken = jwt.sign({ username: user.username }, secretKey);
-                res.json({ accessToken });
+                console.log(`User found: ${user.username}, comparing password...`);
+                bcrypt.compare(password, user.password, (err, isMatch) => {
+                    if (err) {
+                        console.error('Error comparing passwords:', err);
+                        res.status(500).json({ message: 'Error checking user. Please try again later.' });
+                    } else if (isMatch) {
+                        console.log('Password match successful');
+                        // Redirect to profile.html after successful login
+                        res.redirect('/profile.html');
+                    } else {
+                        console.log('Password does not match');
+                        res.status(401).json({ message: 'Invalid username or password' });
+                    }
+                });
             } else {
-                res.status(401).json({ message: 'Неправильний логін або пароль' });
+                console.log('User not found');
+                res.status(401).json({ message: 'Invalid username or password' });
             }
         })
         .catch(error => {
-            console.error('Помилка перевірки користувача:', error);
-            res.status(500).json({ message: 'Помилка перевірки користувача. Будь ласка, спробуйте пізніше.' });
+            console.error('Error checking user:', error);
+            res.status(500).json({ message: 'Error checking user. Please try again later.' });
         });
 });
 
-// Захищений маршрут
-app.get('/my_files', authenticateToken, (req, res) => {
-    // Доступні тільки авторизованим користувачам
-    res.json({ message: `Welcome, ${req.user.username}! Here are your files.` });
+// Handler for serving index.html
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'index.html');
+    res.sendFile(indexPath);
 });
 
-// Запуск сервера
+// Start server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

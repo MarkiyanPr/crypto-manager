@@ -4,12 +4,14 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         const username = document.getElementById('username').value;
+        const firstname = document.getElementById('firstname').value;
+        const surname = document.getElementById('surname').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const passwordAgain = document.getElementById('passwordAgain').value;
         const responseDiv = document.getElementById('form-response');
 
-        if (!username || !email || !password || !passwordAgain) {
+        if (!username || !email || !password || !passwordAgain || !firstname || !surname) {
             responseDiv.textContent = 'All fields are required.';
             responseDiv.style.color = 'red';
             return;
@@ -23,8 +25,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const userData = {
             username,
+            password,
             email,
-            password
+            firstname,
+            surname
         };
 
         try {

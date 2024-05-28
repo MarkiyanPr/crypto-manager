@@ -105,6 +105,13 @@ header .right__menu ul {
 .username_field {
   grid-area: username;
 }
+.name_field {
+  grid-area: name;
+}
+
+.surname_field {
+  grid-area: surname;
+}
 
 .email_field {
   grid-area: email;
@@ -125,6 +132,7 @@ header .right__menu ul {
 .registration__block>form {
   display: grid;
   grid-template-areas:
+  "name surname"
     "username email"
     "password password_again"
     "submit submit";
@@ -425,6 +433,8 @@ a.download__file{
 @media screen and (max-width: 720px){
   .registration__block>form{
     grid-template-areas:
+    "name"
+    "surname"
     "username"
     "email"
     "password"

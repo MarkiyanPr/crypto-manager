@@ -17,12 +17,20 @@
             <ul>
                 <li><a href="my_files.html">My Files</a></li>
                 <li><a href="upload.html">Upload</a></li>
-                <li><a href="registration.html">Account</a></li>
+                 <li><a href="#" id="accountLink">Account</a></li>
             </ul>
         </div>
     </header>
     <div class="registration__block container">
         <form id="registration-form" class="form">
+            <div class="name_field">
+                <label for="firstname">Name:</label><br>
+                <input type="text" id="firstname" name="firstname"><br>
+            </div>
+            <div class="surname_field">
+                <label for="surname">Surname:</label><br>
+                <input type="text" id="surname" name="surname"><br>
+            </div>
             <div class="username_field">
                 <label for="username">Username:</label><br>
                 <input type="text" id="username" name="username"><br>
@@ -45,5 +53,6 @@
         <p>or</p>
         <a href="login.html" class="login_btn">Sign In</a>
     </div>
+    <script src="authRedirect.js"></script>
 </body>
 </html>

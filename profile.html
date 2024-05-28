@@ -18,7 +18,7 @@
             <ul>
                 <li><a href="/my_files.html">My Files</a></li>
                 <li><a href="/upload.html">Upload</a></li>
-                <li><a href="/profile.html">Profile</a></li> <!-- Changed the link to profile.html -->
+                 <li><a href="#" id="accountLink">Account</a></li> <!-- Changed the link to profile.html -->
             </ul>
         </div>
     </header>
@@ -28,7 +28,7 @@
             <div class="user__details">
                 <div class="user__fullname">
                     <p id="userName" class="user__name"></p> <!-- Added id to user name -->
-                    <p class="user__surname">Hack</p> <!-- Assuming surname is constant -->
+                    <p id="userSurname" class="user__surname"></p> <!-- Assuming surname is constant -->
                 </div>
                 <p id="userEmail" class="user__email"></p> <!-- Added id to user email -->
             </div>
@@ -39,21 +39,29 @@
         </div>
     </div>
 
+    
     <script>
         window.onload = function () {
-            // Assuming you have user data available in a JavaScript object named 'userData'
-            const userData = {
-                name: 'Alex', // Replace with actual name
-                email: 'markijan303@gmail.com', // Replace with actual email
-                photo: 'img/user-photo.avif' // Replace with actual photo URL
-            };
+    fetch('/user', {
+        method: 'GET',
+        headers: {
+            'Authorization': localStorage.getItem('accessToken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.user);
+        if (data.user) {
+            document.getElementById('userName').textContent = data.user.firstName;
+            document.getElementById('userSurname').textContent = data.user.surname;
+            document.getElementById('userEmail').textContent = data.user.email;
+            document.getElementById('userPhoto').src = data.user.photo || 'img/user-photo.avif';
+        }
+    });
+};
 
-            // Update user info on the profile page
-            document.getElementById('userName').textContent = userData.name;
-            document.getElementById('userEmail').textContent = userData.email;
-            document.getElementById('userPhoto').src = userData.photo;
-        };
     </script>
+    <script src="authRedirect.js"></script>
 </body>
 
 </html>

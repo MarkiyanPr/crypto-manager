@@ -52,7 +52,7 @@
                     console.log('Login successful:', data);
                     // Save the token in localStorage (or sessionStorage) and redirect to another page
                     localStorage.setItem('accessToken', data.accessToken);
-                    window.location.href = '/my_files.html'; // Change to your desired page
+                    window.location.href = '/profile.html'; // Change to your desired page
                 } else {
                     document.getElementById('message').textContent = data.message || 'Login failed';
                     console.error('Login failed:', data);
@@ -63,6 +63,10 @@
                 console.error('Error:', error);
             });
         });
+
+        
     </script>
+    <script src="authRedirect.js"></script>
+
 </body>
 </html>

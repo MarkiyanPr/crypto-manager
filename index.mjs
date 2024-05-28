@@ -46,15 +46,15 @@ app.get('/', (req, res) => {
 
 // Handler for registration
 app.post('/register', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, firstname, surname, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(`Registering user: ${username}, email: ${email}, hashedPassword: ${hashedPassword}`);
+    console.log(`Registering user: ${username}, first name: ${firstname}, surname: ${surname}, email: ${email}, hashedPassword: ${hashedPassword}`);
 
-    function saveUserToDatabase(username, email, hashedPassword) {
+    function saveUserToDatabase(username, firstname, surname, email, hashedPassword) {
         return new Promise((resolve, reject) => {
             const db = new sqlite3.Database('database.db');
-            const query = `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`;
-            db.run(query, [username, email, hashedPassword], (error) => {
+            const query = `INSERT INTO users (username, password, email, firstName, surname) VALUES (?, ?, ?, ?, ?)`;
+            db.run(query, [username, hashedPassword ,email, firstname, surname ], (error) => {
                 db.close();
                 if (error) {
                     reject(error);
@@ -65,7 +65,7 @@ app.post('/register', async (req, res) => {
         });
     }
 
-    saveUserToDatabase(username, email, hashedPassword)
+    saveUserToDatabase(username, firstname, surname, email, hashedPassword)
         .then(() => {
             createUserFolder(username);
             res.json({ message: 'Registration successful!' });
@@ -79,8 +79,7 @@ app.post('/register', async (req, res) => {
 // Handler for login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    console.log(`Attempting login for user: ${username}, password: ${password}`);
-    console.log('Request body:', req.body);
+    console.log(`Attempting login for user: ${username}`);
 
     function checkUserInDatabase(username) {
         return new Promise((resolve, reject) => {
@@ -91,7 +90,6 @@ app.post('/login', (req, res) => {
                 if (error) {
                     reject(error);
                 } else {
-                    console.log('User found:', row);  // Додайте це логування
                     resolve(row);
                 }
             });
@@ -101,29 +99,30 @@ app.post('/login', (req, res) => {
     checkUserInDatabase(username)
         .then(user => {
             if (user) {
-                console.log(`User found: ${user.username}, comparing password...`);
                 bcrypt.compare(password, user.password, (err, isMatch) => {
                     if (err) {
-                        console.error('Error comparing passwords:', err);
                         res.status(500).json({ message: 'Error checking user. Please try again later.' });
                     } else if (isMatch) {
-                        console.log('Password match successful');
-                        const accessToken = jwt.sign({ username: user.username }, secretKey);
+                        const { username, email, firstName, surname } = user; // Destructure the user object
+                        const accessToken = jwt.sign({ username, email, firstName, surname }, secretKey); // Include firstname and surname in the token payload
+                        console.log('User token:', accessToken); // Logging the token here
                         res.json({ accessToken });
                     } else {
-                        console.log('Password does not match');
                         res.status(401).json({ message: 'Invalid username or password' });
                     }
                 });
             } else {
-                console.log('User not found');
                 res.status(401).json({ message: 'Invalid username or password' });
             }
         })
         .catch(error => {
-            console.error('Error checking user:', error);
             res.status(500).json({ message: 'Error checking user. Please try again later.' });
         });
+});
+
+app.get('/user', authenticateToken, (req, res) => {
+    const user = req.user; // User information is stored in req.user after authentication
+    res.json({ user });
 });
 
 // Protected route

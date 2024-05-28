@@ -19,9 +19,9 @@
                 <li><a href="/registration.html">Account</a></li>
             </ul>
         </div>
-    </header>    
+    </header>
     <div class="login__block container">
-        <form action="/login" method="post" class="form">
+        <form id="loginForm" class="form">
             <label for="username">Username:</label><br>
             <input type="text" id="username" name="username" required><br>
             
@@ -30,6 +30,39 @@
             
             <input type="submit" value="Login">
         </form>
+        <div id="message"></div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.accessToken) {
+                    console.log('Login successful:', data);
+                    // Save the token in localStorage (or sessionStorage) and redirect to another page
+                    localStorage.setItem('accessToken', data.accessToken);
+                    window.location.href = '/my_files.html'; // Change to your desired page
+                } else {
+                    document.getElementById('message').textContent = data.message || 'Login failed';
+                    console.error('Login failed:', data);
+                }
+            })
+            .catch(error => {
+                document.getElementById('message').textContent = 'An error occurred';
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>

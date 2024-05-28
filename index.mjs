@@ -1,17 +1,17 @@
 import express from 'express';
-import fs from 'fs';
 import path from 'path';
 import sqlite3 from 'sqlite3';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PORT = 3000;
-const secretKey = 'your_secret_key';
 
 const app = express();
+const PORT = 3000;
+const secretKey = 'your_secret_key';
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -38,6 +38,11 @@ function authenticateToken(req, res, next) {
         next();
     });
 }
+
+app.get('/', (req, res) => {
+    const indexPath = path.join(__dirname, 'index.html');
+    res.sendFile(indexPath);
+});
 
 // Handler for registration
 app.post('/register', async (req, res) => {
@@ -86,7 +91,7 @@ app.post('/login', (req, res) => {
                 if (error) {
                     reject(error);
                 } else {
-                    console.log('User found:', row);
+                    console.log('User found:', row);  // Додайте це логування
                     resolve(row);
                 }
             });
@@ -103,8 +108,8 @@ app.post('/login', (req, res) => {
                         res.status(500).json({ message: 'Error checking user. Please try again later.' });
                     } else if (isMatch) {
                         console.log('Password match successful');
-                        // Redirect to profile.html after successful login
-                        res.redirect('/profile.html');
+                        const accessToken = jwt.sign({ username: user.username }, secretKey);
+                        res.json({ accessToken });
                     } else {
                         console.log('Password does not match');
                         res.status(401).json({ message: 'Invalid username or password' });
@@ -121,10 +126,9 @@ app.post('/login', (req, res) => {
         });
 });
 
-// Handler for serving index.html
-app.get('/', (req, res) => {
-    const indexPath = path.join(__dirname, 'index.html');
-    res.sendFile(indexPath);
+// Protected route
+app.get('/my_files', authenticateToken, (req, res) => {
+    res.json({ message: `Welcome, ${req.user.username}! Here are your files.` });
 });
 
 // Start server

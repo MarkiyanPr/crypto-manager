@@ -6,8 +6,13 @@ import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
+
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const userFilesFolder = path.join(__dirname, 'user_files');
 
 const app = express();
 const PORT = 3000;
@@ -123,6 +128,27 @@ app.post('/login', (req, res) => {
 app.get('/user', authenticateToken, (req, res) => {
     const user = req.user; // User information is stored in req.user after authentication
     res.json({ user });
+});
+
+app.post('/upload', authenticateToken, (req, res) => {
+    const { file } = req.body; // Припустимо, що файл передається у тілі запиту
+    const username = req.user.username; // Отримання імені користувача з токену
+    const userFolderPath = path.join(__dirname, 'users_folders', username);
+
+    // Перевірка існування папки користувача і створення, якщо її не існує
+    if (!fs.existsSync(userFolderPath)) {
+        fs.mkdirSync(userFolderPath, { recursive: true });
+    }
+
+    // Збереження файлу у папці користувача
+    fs.writeFile(path.join(userFolderPath, file.name), file.data, (err) => {
+        if (err) {
+            console.error('Error saving file:', err);
+            return res.status(500).json({ message: 'Error saving file' });
+        }
+        console.log('File saved successfully');
+        res.json({ message: 'File saved successfully' });
+    });
 });
 
 // Protected route

@@ -7,8 +7,8 @@
     <title>Upload</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -18,19 +18,21 @@
             <ul>
                 <li><a href="my_files.html">My Files</a></li>
                 <li><a href="upload.html">Upload</a></li>
-                 <li><a href="#" id="accountLink">Account</a></li>
+                <li><a href="#" id="accountLink">Account</a></li>
             </ul>
         </div>
     </header>
-    <div class="upload__block container" id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
+    <div class="upload__block container">
         <div>
-            <input type="file" id="file_input" accept="image/*">            <p>Drag & Drop files here</p>
+            <input type="file" id="file_input" accept="image/*" onchange="uploadFile(event);">
+            <p>Drag & Drop files here</p>
             <img class="upload_blue" src="img/upload.png" alt="">
             <img class="upload_white" src="img/upload-white.png" alt="">
         </div>
     </div>
 
     <script src="authRedirect.js"></script>
+    <script src="upload.js"></script>
 </body>
 
 </html>

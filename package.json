@@ -17,6 +17,7 @@
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
     "mime": "^4.0.3",
+    "multer": "^1.4.5-lts.1",
     "sqlite3": "^5.1.7"
   },
   "keywords": []

@@ -6,31 +6,34 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import multer from 'multer';
 
-
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const userFilesFolder = path.join(__dirname, 'user_files');
+// Your other imports...
 
 const app = express();
 const PORT = 3000;
 const secretKey = 'your_secret_key';
 
+
+// Configure express-session
+app.use(session({
+    secret: 'your_session_secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // Set secure option to false
+}));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Use express-session for session management
-app.use(session({
-    secret: secretKey,
-    resave: false,
-    saveUninitialized: true
-}));
+
 
 function createUserFolder(username) {
-    const userFolderPath = path.join(__dirname, 'users folders', username);
+    const userFolderPath = path.join(__dirname, 'users_folders', username);
     if (!fs.existsSync(userFolderPath)) {
         fs.mkdirSync(userFolderPath, { recursive: true });
         console.log(`Folder created for user: ${username}`);
@@ -41,9 +44,11 @@ function createUserFolder(username) {
 
 // Middleware for token authentication
 function authenticateToken(req, res, next) {
-    const token = req.session.token; // Retrieve token from session
+    const token = req.headers.cookie.split('=')[1];  // Retrieve token from cookies
+    console.log("token");
+    console.log(token);
     if (!token) return res.sendStatus(401);
-
+    console.log("authenticateToken викликана");
     jwt.verify(token, secretKey, (err, user) => {
         if (err) return res.sendStatus(403);
         req.user = user;
@@ -118,7 +123,8 @@ app.post('/login', (req, res) => {
                         const { username, email, firstName, surname } = user;
                         const accessToken = jwt.sign({ username, email, firstName, surname }, secretKey);
                         console.log('User token:', accessToken);
-                        req.session.token = accessToken; // Store token in session
+                        // Store token in localStorage
+                        res.cookie('token', accessToken, { httpOnly: true });
                         res.json({ accessToken });
                     } else {
                         res.status(401).json({ message: 'Invalid username or password' });
@@ -135,36 +141,51 @@ app.post('/login', (req, res) => {
 
 
 
+
 app.get('/user', authenticateToken, (req, res) => {
     const user = req.user; // User information is stored in req.user after authentication
     res.json({ user });
 });
 
-app.post('/upload', authenticateToken, (req, res) => {
-    const { file } = req.body; // Припустимо, що файл передається у тілі запиту
-    const username = req.user.username; // Отримання імені користувача з токену
+const upload = multer({ dest: 'uploads/' });
+
+app.post('/upload', authenticateToken, upload.single('file'), (req, res) => {
+    const file = req.file;
+    const username = req.user.username;
     const userFolderPath = path.join(__dirname, 'users_folders', username);
 
-    // Перевірка існування папки користувача і створення, якщо її не існує
+    console.log('Received upload request:', file);
+    const token = req.headers.authorization;
+    console.log('Authorization header:', token);
+
     if (!fs.existsSync(userFolderPath)) {
-        fs.mkdirSync(userFolderPath, { recursive: true });
+        console.error('User folder not found:', userFolderPath);
+        return res.status(404).json({ message: 'User folder not found' });
     }
 
-    // Збереження файлу у папці користувача
-    fs.writeFile(path.join(userFolderPath, file.name), file.data, (err) => {
+    console.log('Request headers:', req.headers);
+
+    fs.readFile(file.path, (err, data) => {
         if (err) {
-            console.error('Error saving file:', err);
-            return res.status(500).json({ message: 'Error saving file' });
+            console.error('Error reading file:', err);
+            return res.status(500).json({ message: 'Error reading file' });
         }
-        console.log('File saved successfully');
-        res.json({ message: 'File saved successfully' });
+
+        fs.writeFile(path.join(userFolderPath, file.originalname), data, (err) => {
+            if (err) {
+                console.error('Error saving file:', err);
+                return res.status(500).json({ message: 'Error saving file' });
+            }
+            console.log('File saved successfully');
+            res.json({ message: 'File saved successfully' });
+        });
     });
 });
 
 // Protected route
 app.get('/my_files', authenticateToken, (req, res) => {
     const username = req.user.username;
-    const userFolderPath = path.join(__dirname, 'users folders', username);
+    const userFolderPath = path.join(__dirname, 'users_folders', username);
 
     if (!fs.existsSync(userFolderPath)) {
         return res.status(404).json({ message: 'User folder not found' });
@@ -177,6 +198,9 @@ app.get('/my_files', authenticateToken, (req, res) => {
         res.json({ files });
     });
 });
+
+
+
 
 // Start server
 app.listen(PORT, () => {

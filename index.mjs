@@ -1,4 +1,5 @@
 import express from 'express';
+import session from 'express-session';
 import path from 'path';
 import sqlite3 from 'sqlite3';
 import fs from 'fs';
@@ -21,7 +22,13 @@ const secretKey = 'your_secret_key';
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Function to create user folder
+// Use express-session for session management
+app.use(session({
+    secret: secretKey,
+    resave: false,
+    saveUninitialized: true
+}));
+
 function createUserFolder(username) {
     const userFolderPath = path.join(__dirname, 'users folders', username);
     if (!fs.existsSync(userFolderPath)) {
@@ -34,7 +41,7 @@ function createUserFolder(username) {
 
 // Middleware for token authentication
 function authenticateToken(req, res, next) {
-    const token = req.headers['authorization'];
+    const token = req.session.token; // Retrieve token from session
     if (!token) return res.sendStatus(401);
 
     jwt.verify(token, secretKey, (err, user) => {
@@ -108,9 +115,10 @@ app.post('/login', (req, res) => {
                     if (err) {
                         res.status(500).json({ message: 'Error checking user. Please try again later.' });
                     } else if (isMatch) {
-                        const { username, email, firstName, surname } = user; // Destructure the user object
-                        const accessToken = jwt.sign({ username, email, firstName, surname }, secretKey); // Include firstname and surname in the token payload
-                        console.log('User token:', accessToken); // Logging the token here
+                        const { username, email, firstName, surname } = user;
+                        const accessToken = jwt.sign({ username, email, firstName, surname }, secretKey);
+                        console.log('User token:', accessToken);
+                        req.session.token = accessToken; // Store token in session
                         res.json({ accessToken });
                     } else {
                         res.status(401).json({ message: 'Invalid username or password' });
@@ -124,6 +132,8 @@ app.post('/login', (req, res) => {
             res.status(500).json({ message: 'Error checking user. Please try again later.' });
         });
 });
+
+
 
 app.get('/user', authenticateToken, (req, res) => {
     const user = req.user; // User information is stored in req.user after authentication
@@ -153,7 +163,19 @@ app.post('/upload', authenticateToken, (req, res) => {
 
 // Protected route
 app.get('/my_files', authenticateToken, (req, res) => {
-    res.json({ message: `Welcome, ${req.user.username}! Here are your files.` });
+    const username = req.user.username;
+    const userFolderPath = path.join(__dirname, 'users folders', username);
+
+    if (!fs.existsSync(userFolderPath)) {
+        return res.status(404).json({ message: 'User folder not found' });
+    }
+
+    fs.readdir(userFolderPath, (err, files) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error reading user folder' });
+        }
+        res.json({ files });
+    });
 });
 
 // Start server

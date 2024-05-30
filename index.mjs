@@ -158,9 +158,17 @@ app.post('/upload', authenticateToken, upload.single('file'), (req, res) => {
     const token = req.headers.authorization;
     console.log('Authorization header:', token);
 
+    // Перевірка, чи користувач залогінений і чи він є в базі даних
+    if (!req.user) {
+        console.error('User is not logged in');
+        return res.status(401).json({ message: 'User is not logged in' });
+    }
+
+    // Перевірка, чи існує папка користувача, якщо ні - створення нової
     if (!fs.existsSync(userFolderPath)) {
-        console.error('User folder not found:', userFolderPath);
-        return res.status(404).json({ message: 'User folder not found' });
+        console.log(`User folder not found for ${username}, creating new folder...`);
+        fs.mkdirSync(userFolderPath, { recursive: true });
+        console.log(`New folder created for ${username}`);
     }
 
     console.log('Request headers:', req.headers);

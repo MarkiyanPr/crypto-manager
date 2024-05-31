@@ -5,12 +5,10 @@ function uploadFile(event) {
     const formData = new FormData();
     formData.append('file', file);
     console.log("Функція викликана");
-    // Retrieve the token from localStorage
     const token = localStorage.getItem('token');
     console.log(token);
     console.log(formData)
 
-    // Check if the token exists
     if (!token) {
         console.error('Token is not stored in localStorage');
         return;
@@ -21,15 +19,13 @@ function uploadFile(event) {
     console.log('Authorization header:', `Bearer ${token}`);
 
 
-    // Make a fetch request to upload the file
-    localStorage.setItem('token', token); // Де data.accessToken - це токен, отриманий після успішного входу
+    localStorage.setItem('token', token); 
 
-// Make a fetch request to upload the file
 fetch('/upload', {
     method: 'POST',
     body: formData,
     headers: {
-        'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+        'Authorization': `Bearer ${token}` 
     }
 })
     .then(response => {
@@ -40,9 +36,9 @@ fetch('/upload', {
     })
     .then(data => {
         console.log("Server log message");
-        console.log(data.message); // Log the message returned by the server
+        console.log(data.message); 
     })
     .catch(error => {
-        console.error('Error uploading file:', error); // Log any errors that occur during the process
+        console.error('Error uploading file:', error); 
     });
 }

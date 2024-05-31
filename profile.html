@@ -18,19 +18,19 @@
             <ul>
                 <li><a href="/my_files.html">My Files</a></li>
                 <li><a href="/upload.html">Upload</a></li>
-                 <li><a href="#" id="accountLink">Account</a></li> <!-- Changed the link to profile.html -->
+                 <li><a href="#" id="accountLink">Account</a></li> 
             </ul>
         </div>
     </header>
     <div class="profile__block container">
         <div class="user__info">
-            <img id="userPhoto" src="" alt="" class="user__photo"> <!-- Added id to user photo -->
+            <img id="userPhoto" src="" alt="" class="user__photo"> 
             <div class="user__details">
                 <div class="user__fullname">
-                    <p id="userName" class="user__name"></p> <!-- Added id to user name -->
-                    <p id="userSurname" class="user__surname"></p> <!-- Assuming surname is constant -->
+                    <p id="userName" class="user__name"></p> 
+                    <p id="userSurname" class="user__surname"></p> 
                 </div>
-                <p id="userEmail" class="user__email"></p> <!-- Added id to user email -->
+                <p id="userEmail" class="user__email"></p> 
             </div>
         </div>
         <div class="profile__buttons">
@@ -42,13 +42,20 @@
     
     <script>
         window.onload = function () {
+    const token = localStorage.getItem('accessToken');
+    
     fetch('/user', {
         method: 'GET',
         headers: {
-            'Authorization': localStorage.getItem('accessToken')
+            'Authorization': `Bearer ${token}` 
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
     .then(data => {
         console.log(data.user);
         if (data.user) {
@@ -57,9 +64,11 @@
             document.getElementById('userEmail').textContent = data.user.email;
             document.getElementById('userPhoto').src = data.user.photo || 'img/user-photo.avif';
         }
+    })
+    .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
     });
 };
-
     </script>
     <script src="authRedirect.js"></script>
 </body>

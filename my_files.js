@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
         const fileList = document.getElementById('file-list');
-        fileList.innerHTML = ''; // Clear existing list
+        fileList.innerHTML = ''; 
         data.files.forEach(file => {
             const listItem = document.createElement('li');
             listItem.innerHTML = `

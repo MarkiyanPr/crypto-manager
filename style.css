@@ -171,6 +171,12 @@ header .right__menu ul {
   margin: 0 auto;
   max-width: 80px;
 }
+.upload__block.container{
+  text-align: center;
+}
+.upload_blue{
+  margin-top: 20px;
+}
 
 #drop_zone.hover {
   background: #2848BA;

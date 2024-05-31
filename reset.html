@@ -38,7 +38,6 @@
             const username = document.getElementById('username').value;
             const newPassword = document.getElementById('newPassword').value;
     
-            // Step 1: Initialize password reset
             fetch('password_reset.php', {
                 method: 'POST',
                 headers: {
@@ -51,7 +50,6 @@
                 if (data.resetToken) {
                     console.log('Reset token:', data.resetToken);
     
-                    // Step 2: Complete password reset
                     fetch('reset_finish.php', {
                         method: 'POST',
                         headers: {

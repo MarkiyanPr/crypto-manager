@@ -50,9 +50,8 @@
             .then(data => {
                 if (data.accessToken) {
                     console.log('Login successful:', data);
-                    // Save the token in localStorage (or sessionStorage) and redirect to another page
                     localStorage.setItem('token', data.accessToken);
-                    window.location.href = '/profile.html'; // Change to your desired page
+                    window.location.href = '/profile.html'; 
                 } else {
                     document.getElementById('message').textContent = data.message || 'Login failed';
                     console.error('Login failed:', data);

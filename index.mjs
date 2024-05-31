@@ -8,19 +8,16 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import multer from 'multer';
 
-// Your other imports...
 
 const app = express();
 const PORT = 3000;
-const secretKey = 'your_secret_key';
 
 
-// Configure express-session
 app.use(session({
     secret: 'your_session_secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // Set secure option to false
+    cookie: { secure: false } 
 }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,9 +39,8 @@ function createUserFolder(username) {
     }
 }
 
-// Middleware for token authentication
 function authenticateToken(req, res, next) {
-    const token = req.headers.cookie.split('=')[1];  // Retrieve token from cookies
+    const token = req.headers.cookie.split('=')[1];  
     console.log("token");
     console.log(token);
     if (!token) return res.sendStatus(401);
@@ -61,7 +57,6 @@ app.get('/', (req, res) => {
     res.sendFile(indexPath);
 });
 
-// Handler for registration
 app.post('/register', async (req, res) => {
     const { username, firstname, surname, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -93,7 +88,6 @@ app.post('/register', async (req, res) => {
         });
 });
 
-// Handler for login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     console.log(`Attempting login for user: ${username}`);
@@ -123,7 +117,6 @@ app.post('/login', (req, res) => {
                         const { username, email, firstName, surname } = user;
                         const accessToken = jwt.sign({ username, email, firstName, surname }, secretKey);
                         console.log('User token:', accessToken);
-                        // Store token in localStorage
                         res.cookie('token', accessToken, { httpOnly: true });
                         res.json({ accessToken });
                     } else {
@@ -143,7 +136,7 @@ app.post('/login', (req, res) => {
 
 
 app.get('/user', authenticateToken, (req, res) => {
-    const user = req.user; // User information is stored in req.user after authentication
+    const user = req.user; 
     res.json({ user });
 });
 
@@ -158,13 +151,11 @@ app.post('/upload', authenticateToken, upload.single('file'), (req, res) => {
     const token = req.headers.authorization;
     console.log('Authorization header:', token);
 
-    // Перевірка, чи користувач залогінений і чи він є в базі даних
     if (!req.user) {
         console.error('User is not logged in');
         return res.status(401).json({ message: 'User is not logged in' });
     }
 
-    // Перевірка, чи існує папка користувача, якщо ні - створення нової
     if (!fs.existsSync(userFolderPath)) {
         console.log(`User folder not found for ${username}, creating new folder...`);
         fs.mkdirSync(userFolderPath, { recursive: true });
@@ -190,7 +181,6 @@ app.post('/upload', authenticateToken, upload.single('file'), (req, res) => {
     });
 });
 
-// Protected route
 app.get('/my_files', authenticateToken, (req, res) => {
     const username = req.user.username;
     const userFolderPath = path.join(__dirname, 'users_folders', username);
@@ -210,7 +200,6 @@ app.get('/my_files', authenticateToken, (req, res) => {
 
 
 
-// Start server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

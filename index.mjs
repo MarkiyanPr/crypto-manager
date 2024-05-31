@@ -11,7 +11,7 @@ import multer from 'multer';
 
 const app = express();
 const PORT = 3000;
-
+const secretKey = 'your_secret_key';
 
 app.use(session({
     secret: 'your_session_secret',
